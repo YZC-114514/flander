@@ -56,36 +56,51 @@ async def wordle(bot,ctx,l):
 
 
 
-async def rock_paper_scissors(ctx,bot):
-    while (input!="stop"):
-        await ctx.send("選擇你要出什麼吧!\n stop 終止遊戲")
+async def rock_paper_scissors(ctx, bot):
+    input_choice = ""
+    choices = {"剪刀", "石頭", "布"}
+    
+    while input_choice != "stop":
+        await ctx.send("選擇你要出什麼吧!\n輸入 'stop' 來終止遊戲")
+
+
         try:
-            input = await bot.wait_for('input', timeout=120)
+            message = await bot.wait_for('message', timeout=120)
+            input_choice = message.content.strip()
         except asyncio.TimeoutError:
             await ctx.send('遊戲超時，請重新開始。')
             return
-        reslut = "Un"
-        choice = {"剪刀","石頭","布"}
-        flander_choose = random.sample(choice,1)
-        if input==flander_choose: reslut = "平局"
-        else: 
-            match input:
-                case "剪刀":
-                    if flander_choose == "石頭": reslut = "你輸了"
-                    else: reslut = "你贏了"
-                case "石頭":
-                    if flander_choose == "布": reslut = "你輸了"
-                    else: reslut = "你贏了"
-                case "布":
-                    if flander_choose =="剪刀": reslut = "你輸了"
-                    else: reslut = "你贏了"
-            await ctx.send(f"你出了{input}, 芙蘭朵露出了{flander_choose}, 結果為：{reslut}")
-        if input=="stop":
-            if reslut == "你贏了": 
-                return "一贏了就跑，輸不起是吧"
-            elif reslut == "你輸了":
-                return "雑魚～  雑魚～"
-            else: return "這次就放過你了~ 下不為例"
-            
+        
+        if input_choice == "stop":
+            if result == "你贏了":
+                await ctx.send("一贏了就跑，輸不起是吧")
+            elif result == "你輸了":
+                await ctx.send("雑魚～  雑魚～")
+            else:
+                await ctx.send("這次就放過你了~ 下不為例")
+            await ctx.send("遊戲已終止。")
+            return
+
+        if input_choice not in choices:
+            await ctx.send("無效的選擇，請選擇 剪刀、石頭 或 布。")
+            continue
+        
+        flander_choose = random.choice(list(choices))
+        result = "平局"
+        
+        if input_choice == flander_choose:
+            result = "平局"
+        elif (input_choice == "剪刀" and flander_choose == "石頭") or \
+             (input_choice == "石頭" and flander_choose == "布") or \
+             (input_choice == "布" and flander_choose == "剪刀"):
+            result = "你輸了"
+        else:
+            result = "你贏了"
+        
+        await ctx.send(f"你出了{input_choice}, 芙蘭朵露出了{flander_choose}, 結果為：{result}")
+
+
+    
+    
     
 
