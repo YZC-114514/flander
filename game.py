@@ -1,6 +1,6 @@
-import discord
 import random, nltk,asyncio
 from nltk.corpus import words
+import aiosqlite
 
 nltk.download('words')
 english_words = set(w.lower() for w in words.words())
@@ -100,7 +100,56 @@ async def rock_paper_scissors(ctx, bot):
         await ctx.send(f"你出了{input_choice}, 芙蘭朵露出了{flander_choose}, 結果為：{result}")
 
 
-    
-    
-    
 
+async def riddle(ctx, bot):
+    async with aiosqlite.connect('game.db') as gm:
+        # 从数据库随机获取谜题
+        async with gm.execute('SELECT riddle, answer FROM riddles ORDER BY RANDOM() LIMIT 1') as cursor:
+            row = await cursor.fetchone()
+            if not row:
+                await ctx.send("当前没有可用的谜题，请联系管理员添加。")
+                return
+
+            riddle, answer = row
+            await ctx.send(f"谜题：{riddle}\n你有6次猜谜机会，输入 /stop 可提前结束")
+
+            attempts = 0
+            max_attempts = 6
+            stopped = False
+
+            while attempts < max_attempts and not stopped:
+                try:
+                    # 等待用户输入
+                    message = await bot.wait_for(
+                        'message',
+                        timeout=120,
+                        check=lambda m: m.author == ctx.author and m.channel == ctx.channel
+                    )
+                except asyncio.TimeoutError:
+                    await ctx.send(f"猜谜超时，游戏结束,正確答案是：**{answer}**")
+                    return
+
+                guess = message.content.strip().lower()
+                
+                # 处理停止指令
+                if guess == '/stop':
+                    await ctx.send(f"游戏提前结束，正确答案是：**{answer}**")
+                    stopped = True
+                
+                # 检查答案
+                elif guess == answer.lower():
+                    await ctx.send("恭喜你答对力！")
+                    stopped = True
+                
+                # 错误答案处理
+                else:
+                    attempts += 1
+                    remaining = max_attempts - attempts
+                    hint = f"答案不正确 ({attempts}/{max_attempts})"
+                    if remaining > 0 and not stopped:
+                        hint += f"，剩余尝试次数：{remaining}"
+                    await ctx.send(hint)
+
+            # 机会用尽处理
+            if not stopped:
+                await ctx.send(f"机会用尽！謎底為：**{answer}**")

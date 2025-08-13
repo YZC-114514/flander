@@ -2,6 +2,8 @@ import random
 import aiosqlite
 import asyncio
 from datetime import datetime
+import pandas as pd
+import json
 
 # 初始化數據庫
 async def init_db():

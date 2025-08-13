@@ -1,29 +1,10 @@
-import json
-from pixivpy3 import AppPixivAPI
+import json, requests
+url = "https://image.anosu.top/pixiv/json"
 
-f = open('config.json')
-data = json.load(f)
-token = data["pixiv"]
-
-#login
-api = AppPixivAPI()
-api.set_auth(token)
-
-
-# 搜尋圖片
-def search_pixiv_images(keyword, max_results=10):
-    for i in range(max_results):
-        json_result = api.search_illust(keyword)
-        if json_result and hasattr(json_result, 'illusts') and json_result.illusts:
-            illust = json_result.illusts[0]
-            print(f"插圖 ID: {illust.id}")
-            print(f"標題: {illust.title}")
-            print(f"作者: {illust.user.name}")
-            print(f"圖片 URL: {illust.image_urls['large']}")
-        else:
-            print("未找到插圖或 API 請求失敗。")
-
-    
-
-# 使用關鍵字搜尋圖片
-search_pixiv_images("東方")
+async def pictures(r18,keywords):
+    r18text = "?r18=" + str(r18)
+    key =  "&keyword=" + keywords
+    picurl = url+r18text+key
+    params = {'return': 'json'}
+    res = requests.get(picurl, params=params).json()
+    return(json.dumps(res, indent=2))

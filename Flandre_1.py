@@ -1,10 +1,9 @@
 
-import discord,json,aiosqlite
+import discord,json,radio, aiosqlite
 from discord.ext import commands, tasks
-import fortune as ft
-import basic as bc
-import game as gm
-import radio
+import fortune as ft,finance as fin
+import basic as bc, game as gm
+import pictures as pc
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -62,7 +61,7 @@ async def ant_cal(ctx, f:int=144 ,type:str="Dipole", elm:int=0):
 
 @bot.hybrid_command()
 async def total_impedance(ctx, f, connected, n:int = 1):
-    """建議電路的總阻抗計算： P=並聯 S=串聯"""
+    """簡易電路的總阻抗計算： P=並聯 S=串聯"""
     await radio.imped_cal(ctx,bot,n,f,connected)
 
 @bot.hybrid_command()
@@ -76,8 +75,24 @@ async def psr(ctx):
     """"和芙蘭一起玩石頭剪刀布吧 輸入: 布 /剪刀 / 石頭"""
     await gm.rock_paper_scissors(ctx,bot)
 
+@bot.hybrid_command()
+async def riddle(ctx):
+    """來猜一猜字謎吧"""
+    await gm.riddle(ctx, bot)
 
 
+@bot.hybrid_command()
+async def picture(ctx,r18:int=0,keywords:str="null"):
+    """隨機圖片 r18：18+開關; keywords：關鍵詞 以 '|' 作分割 """
+    text = await pc.pictures(r18,keywords)
+    await ctx.send(text)
+
+
+@bot.hybrid_command()
+async def exchange_rate_calculation(ctx,note2:str,note1:str='HKD',value:int=100):
+    """匯率實時計算 默認100港幣兌目標貨幣"""
+    text = fin.get_currency(note1,note2,value)
+    await ctx.send(text)
 
 bot.run(token)
 
